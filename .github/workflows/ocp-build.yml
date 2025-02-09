@@ -1,24 +1,30 @@
-name: Trigger OpenShift Build
+name: OpenShift Build Trigger
 
 on:
   push:
     branches:
-      - main  # Adjust this if your primary branch is named differently (e.g. master)
+      - main  # Adjust as necessary
 
 jobs:
-  openshift-build:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v2
+
+      - name: Install OpenShift CLI (oc)
+        uses: redhat-actions/oc-installer@v1
+        with:
+          version: 'latest'  # or specify a particular version
 
       - name: Log in to OpenShift
         uses: redhat-actions/oc-login@v1
         with:
           openshift_server_url: ${{ secrets.OPENSHIFT_SERVER_URL }}
           openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
+          insecure_skip_tls_verify: true
           namespace: ${{ secrets.OPENSHIFT_NAMESPACE }}
-          insecure_skip_tls_verify: 'true'
 
-      - name: Trigger build on OpenShift
-        run: oc start-build banking-portal-api --follow
+      - name: Trigger OpenShift Build
+        run: |
+          oc start-build banking-portal-api --follow
